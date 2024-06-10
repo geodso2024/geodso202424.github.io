@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+<div class="grid-container">
+    <div class="grid-item1">
+        <img class="logoh" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="Logo">
+        <div class="user-photo-container">
+            <img src="https://img.freepik.com/psd-gratuitas/ilustracao-3d-de-avatar-ou-perfil-humano_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.2082370165.1715817600&semt=sph" alt="Foto de usuário" class="user-photo">
+            <div class="cinfo"><p class="pinfo">Caixa de informação</p></div>
+        </div>
+        <nav class="menu">
+            <ul>
+                <li class="btnmenu"><a class="a2" href="ger-hor.html">HORÁRIOS</a></li>
+                <li class="btnmenu"><a class="a2" href="ger-user.html">USUÁRIOS</a></li>
+                <li class="btnmenu"><a class="a2" href="ger-rot.html">ROTAS</a></li>
+                <li class="btnmenu"><a class="a2" href="index.html">SAIR</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="grid-item2">
+        <h1 class="arger">Formulário de Cadastro de Horários</h1>
+        <div class="boxtabcads">
+            <div class="dalog">
+                <div class="cabec">Dados de Login</div>
+                <input class="boxcads" name="Horarios" id="casHorarios" type="text" placeholder="Horários">
+                <input class="boxcads" name="Veiculos" id="casVeiculos" type="number" placeholder="Veículos">
+                <input class="boxcads" name="Saidas" id="casSaidas" type="text" placeholder="Saídas">
+                <input class="boxcads" name="Destinos" id="casDestinos" type="text" placeholder="Destinos">
+            </div>
+            <br>
+            <div class="divbtncad">
+                <button class="btncad" id="InstBtn">Adicionar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD26pWZ9AMYoisXfrtm7038K2SuuXuWkr8",
+            authDomain: "glor-ae49f.firebaseapp.com",
+            databaseURL: "https://glor-ae49f-default-rtdb.firebaseio.com",
+            projectId: "glor-ae49f",
+            storageBucket: "glor-ae49f.appspot.com",
+            messagingSenderId: "677710403853",
+            appId: "1:677710403853:web:f67284b068399eebb97844"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase();
+
+    const HorariosInput = document.getElementById("casHorarios");
+    const VeiculosInput = document.getElementById("casVeiculos");
+    const SaidasInput = document.getElementById("casSaidas");
+    const DestinosInput = document.getElementById("casDestinos");
+
+    const addBtn = document.getElementById("InstBtn");
+
+    function AdicionarDados() {
+        set(ref(db, "horarios/" + HorariosInput.value), {
+            Horarios: HorariosInput.value,
+            Veiculos: VeiculosInput.value,
+            Saidas: SaidasInput.value,
+            Destinos: DestinosInput.value
+        })
+        .then(() => {
+            alert("Dados armazenados com sucesso");
+            // Limpar os campos do formulário
+            HorariosInput.value = "";
+            VeiculosInput.value = "";
+            SaidasInput.value = "";
+            DestinosInput.value = "";
+        })
+        .catch((error) => {
+            alert("Falha ao adicionar dados: " + error);
+        });
+    }
+
+    addBtn.addEventListener('click', AdicionarDados);
+</script>
+</body>
+</html>

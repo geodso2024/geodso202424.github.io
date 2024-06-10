@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<div class="grid-container">
+    <div class="grid-item1">
+        <img class="logoh" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="">
+        <div class="user-photo-container">
+            <img src="https://img.freepik.com/psd-gratuitas/ilustracao-3d-de-avatar-ou-perfil-humano_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.2082370165.1715817600&semt=sph" alt="Foto de usuário" class="user-photo">
+            <div class="cinfo"><p class="pinfo">Caixa de informação</p></div>
+        </div>
+
+        <nav class="menu">    
+            <ul>
+                
+                <li class="btnmenu"><a class="a2" href="ger-user.html">USUÁRIOS</a></li>
+                <li class="btnmenu"><a class="a2" href="ger-rot.html">ROTAS</a></li>              
+                <li class="btnmenu"><a class="a2" href="index.html">SAIR</a></li>
+            </ul>
+        </nav>    
+    </div>
+
+    <div class="grid-item2">
+        <h1 class="arger">Formulário de Cadastro de Usuário</h1>
+        <div class="dalog">
+            <div class="cabec">Dados de Login</div>
+            <input class="boxcads" name="nome" id="casname" type="text" placeholder="Nome">
+            <input class="boxcads" name="cpf" id="cascpf" type="number" placeholder="CPF">
+            <input class="boxcads" name="email" id="casemail" type="email" placeholder="Email">
+            <input class="boxcads" name="senha" id="cassenha" type="password" placeholder="Senha">
+            <input class="boxcads" name="route" id="cascicad" type="text" placeholder="Cidade">
+            <input class="boxcads" name="instituicao" id="casinsti" type="text" placeholder="Instituição">
+            <input class="boxcads" name="file" id="casfile" type="file" placeholder="Anexar Arquivo">
+        </div>
+        <br>
+        <div class="divbtncad">
+            <button class="btncad" id="InstBtn">Adicionar</button>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyChwMJS0p4pwi9fL-edQEkOhiSupHURjL4",
+        authDomain: "gloriamobi-5a5bf.firebaseapp.com",
+        databaseURL: "https://gloriamobi-5a5bf-default-rtdb.firebaseio.com",
+        projectId: "gloriamobi-5a5bf",
+        storageBucket: "gloriamobi-5a5bf.appspot.com",
+        messagingSenderId: "94268964690",
+        appId: "1:94268964690:web:d7809308d1a73b555a848b",
+        measurementId: "G-Y7M27KHFLD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const cpfInput = document.getElementById("cascpf");
+    const nameInput = document.getElementById("casname");
+    const emailInput = document.getElementById("casemail");
+    const senhaInput = document.getElementById("cassenha");
+    const cidadeInput = document.getElementById("cascicad");
+    const instituicaoInput = document.getElementById("casinsti");
+    const fileInput = document.getElementById("casfile");
+    
+    const addBtn = document.getElementById("InstBtn");
+
+    function resetFields() {
+        cpfInput.value = '';
+        nomeInput.value = '';
+        emailInput.value = '';
+        senhaInput.value = '';
+        cidadeInput.value = '';
+        instituicaoInput.value = '';
+        fileInput.value = '';
+    }
+
+    async function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function AdicionarDados() {
+        if (senhaInput.value.length < 8) {
+            alert("A senha deve ter pelo menos 8 caracteres.");
+            return;
+        }
+
+        try {
+            let imageUrl = '';
+            const file = fileInput.files[0];
+            if (file) {
+                imageUrl = await readFileAsBase64(file);
+            }
+
+            await setDoc(doc(db, "users", cpfInput.value), {
+                cpf: cpfInput.value,
+                email: emailInput.value,
+                senha: senhaInput.value,
+                cidade: cidadeInput.value,
+                name: nameInput.value,
+                instituicao: instituicaoInput.value,
+                profilePicture: imageUrl
+            });
+
+            alert("Dados armazenados com sucesso");
+            resetFields();
+        } catch (error) {
+            alert("Falha ao adicionar dados: " + error);
+        }
+    }
+
+    addBtn.addEventListener('click', AdicionarDados);
+</script>
+</body>
+</html>

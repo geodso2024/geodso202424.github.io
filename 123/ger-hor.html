@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="grid-container">
+        <div class="grid-item1">
+            <img class="logoh" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="">
+            <div class="user-photo-container">
+                <img src="https://img.freepik.com/psd-gratuitas/ilustracao-3d-de-avatar-ou-perfil-humano_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.2082370165.1715817600&semt=sph" alt="User photo" class="user-photo">
+                <div class="cinfo"><p class="pinfo">caixa de informação</p></div>
+            </div>
+            <nav class="menu">    
+                <ul class="menu">
+                   
+                    <li class="btnmenu"><a class="a2" href="ger-user.html">USUÁRIOS</a></li>
+                    <li class="btnmenu"><a class="a2" href="ger-rot.html">ROTAS</a></li>              
+                    <li class="btnmenu"><a class="a2" href="index.html">SAIR</a></li>
+                </ul>   
+            </nav>            
+        </div>
+        <div class="grid-item2">
+            <h1 class="arger">Área de Gerenciamento de Horários</h1>
+            <div class="boxtab">
+                <div class="cabetab"></div>
+                <div class="scrollable-table-container">
+                    <table id="tab12" class="table table-dark">
+                        <thead>
+                            <tr>
+                                <th>Son</th>
+                                <th>Horários</th>
+                                <th>Veículos</th>
+                                <th>Saídas</th>
+                                <th>Destinos</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody1"></tbody>
+                    </table>
+                </div>
+                <button class="btnfun"><i class="fa-solid fa-plus"></i> <a class="a2" href="cadastro-hor.html">Adicionar</a></button>
+            </div>
+        </div>
+        <div id="editPopup" class="popup"> 
+            <div class="popup-content">
+                <img class="imgpop" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="">
+                <input type="hidden" id="editKey">
+                <input type="text" class="editpop" id="editHorarios" placeholder="Horários">
+                <input type="text" class="editpop" id="editVeiculos" placeholder="Veículos">
+                <input type="text" class="editpop" id="editSaidas" placeholder="Saídas">
+                <input type="text" class="editpop" id="editDestinos" placeholder="Destinos">
+                <button onclick="saveChanges()">Salvar</button>
+                <button onclick="closeEditPopup()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD26pWZ9AMYoisXfrtm7038K2SuuXuWkr8",
+            authDomain: "glor-ae49f.firebaseapp.com",
+            databaseURL: "https://glor-ae49f-default-rtdb.firebaseio.com",
+            projectId: "glor-ae49f",
+            storageBucket: "glor-ae49f.appspot.com",
+            messagingSenderId: "677710403853",
+            appId: "1:677710403853:web:f67284b068399eebb97844"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+
+
+        var stdNo = 0;
+        var tbody = document.getElementById('tbody1');
+    
+        
+
+
+        function AddItemToTable(Horarios, Veiculos, Saidas, Destinos, key) {
+            let trow = document.createElement("tr");
+            let td1 = document.createElement("td");
+            let td2 = document.createElement("td");
+            let td3 = document.createElement("td");
+            let td4 = document.createElement("td");
+            let td5 = document.createElement("td");
+            let td8 = document.createElement("td");
+    
+            td1.innerHTML = ++stdNo;
+            td2.innerHTML = Horarios || "";   
+            td3.innerHTML = Veiculos || "";
+            td4.innerHTML = Saidas || "";
+            td5.innerHTML = Destinos || "";
+    
+            let deleteButton = document.createElement("button");
+            deleteButton.textContent = "Excluir";
+            deleteButton.classList.add("delete-button");
+            deleteButton.addEventListener("click", function() {
+                deleteItem(key); // Chama a função deleteItem ao clicar no botão Excluir
+            });
+    
+            let editButton = document.createElement("button");
+            editButton.textContent = "Alterar";
+            editButton.classList.add("edit-button");
+           
+            editButton.addEventListener("click", function() {
+    openEditPopup(Horarios, Veiculos, Saidas, Destinos, key);
+});
+
+td8.appendChild(deleteButton);
+td8.appendChild(editButton);
+
+trow.appendChild(td1);
+trow.appendChild(td2);
+trow.appendChild(td3);
+trow.appendChild(td4);
+trow.appendChild(td5);
+trow.appendChild(td8);
+
+tbody.appendChild(trow);
+}
+
+function AddAllItemsToTable(Horarios) {
+    stdNo = 0;
+    tbody.innerHTML = "";
+    Horarios.forEach(element => {
+        AddItemToTable(element.Horarios, element.Veiculos, element.Saidas, element.Destinos, element.key);
+    });
+}
+
+function getAllDataOnce() {
+    const dbRef = ref(db, "horarios");
+
+    get(dbRef).then((snapshot) => {
+        var horarios = [];
+        snapshot.forEach((childSnapshot) => {
+            let item = childSnapshot.val();
+            item.key = childSnapshot.key; // Adiciona a chave ao item
+            horarios.push(item);
+        });
+        AddAllItemsToTable(horarios);
+    }).catch((error) => {
+        console.error("Erro ao obter os dados: ", error);
+    });
+}
+
+window.onload = getAllDataOnce;
+
+function openEditPopup(Horarios, Veiculos, Saidas, Destinos, key) {
+    document.getElementById('editKey').value = key;
+    document.getElementById('editHorarios').value = Horarios;
+    document.getElementById('editVeiculos').value = Veiculos;
+    document.getElementById('editSaidas').value = Saidas;
+    document.getElementById('editDestinos').value = Destinos;
+    document.getElementById('editPopup').style.display = 'block';
+}
+
+function closeEditPopup() {
+    document.getElementById('editPopup').style.display = 'none';
+}
+
+window.saveChanges = function saveChanges() {
+    const key = document.getElementById('editKey').value;
+    const user = {
+        Horarios: document.getElementById('editHorarios').value,
+        Veiculos: document.getElementById('editVeiculos').value,
+        Saidas: document.getElementById('editSaidas').value,
+        Destinos: document.getElementById('editDestinos').value,
+    };
+
+    const dbRef = ref(db, "horarios/" + key);
+    update(dbRef, user)
+        .then(() => {
+            console.log("Horário atualizado com sucesso.");
+            closeEditPopup();
+            getAllDataOnce();
+        })
+        .catch(error => {
+            console.error("Erro ao atualizar o horário:", error.message);
+        });
+}
+
+function deleteItem(key, dbRef) {
+        if (confirm("Tem certeza que deseja excluir este item?")) {
+            remove(ref(db, "horarios/" + key))
+                .then(() => {
+                    console.log("Item excluído com sucesso.");
+                    getAllDataOnce(); // Atualiza a tabela após a exclusão
+                })
+                .catch(error => {
+                    console.error("Erro ao excluir o item:", error.message);
+                });
+        }
+    }
+
+    // Parte do código onde o erro ocorre
+    deleteButton.addEventListener("click", function() {
+        deleteItem(key, db); // Passando a referência 'db' como argumento
+    });
+</script>
+
+
+<script src="js/abrirpopup.js"></script>
+</body>
+</html>

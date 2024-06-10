@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+
+<div class="grid-container">
+
+    <div class="grid-item1">
+        <img class="logoh" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="Logo">
+        <div class="user-photo-container">
+            <img src="https://img.freepik.com/psd-gratuitas/ilustracao-3d-de-avatar-ou-perfil-humano_23-2150671142.jpg?size=338&ext=jpg" alt="User photo" class="user-photo">
+            
+        </div>
+        <div class="cinfo">
+            
+            <p class="pinfo">Email do   Usuário</p>
+        </div>
+        <nav class="menu">    
+            <ul class="menu">    
+                <li class="btnmenu"><a class="a2" href="ger-user.html">USUÁRIOS</a></li>
+                <li class="btnmenu"><a class="a2" href="ger-rot.html">ROTAS</a></li>              
+                <li class="btnmenu"><a class="a2" href="index.html">SAIR</a></li>
+            </ul>   
+        </nav>            
+    </div>
+
+    <div class="grid-item2">
+        <h1 class="arger">Formulário de Cadastro de Rota</h1>
+        <div class="dalog">
+            <div class="cabec">Dados de Login</div>
+                        
+            <form id="routeForm">    
+                <select class="boxcads" id="casCity" name="casCity">
+                    <option value="Limoeiro">Limoeiro</option>
+                    <option value="Gloria">Gloria</option>
+                    <option value="Nazaré">Nazaré</option>
+                    <option value="Recife">Recife</option>
+                    <option value="Vitória">Vitória</option>
+                </select>   
+                <input class="boxcads" name="DepartureTime" id="casDepartureTime" type="time" placeholder="Horário de saída">
+                <input class="boxcads" name="ExitPoint" id="casExitPoint" type="text" placeholder="Ponto de saída">
+                <select class="boxcads" id="casRouteUni" name="casRouteUni">
+                    <option value="Universitários Limoeiro">Universitários Limoeiro</option>
+                    <option value="Universitários Nazaré">Universitários Nazaré</option>
+                    <option value="Universitários Recife">Universitários Recife</option>
+                    <option value="Universitários Vitória">Universitários Vitória</option>
+                </select>   
+                <input class="boxcads" name="IMG1" id="IMG1" type="file" placeholder="Imagens">
+                <input class="boxcads" name="IMG2" id="IMG2" type="file" placeholder="Imagens">
+                <input class="boxcads" name="IMG3" id="IMG3" type="file" placeholder="Imagens">
+                <input class="boxcads" name="IMG4" id="IMG4" type="file" placeholder="Imagens">
+                <div class="divbtncad">
+                    <button type="button" class="btncad" id="InstBtn">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyChwMJS0p4pwi9fL-edQEkOhiSupHURjL4",
+        authDomain: "gloriamobi-5a5bf.firebaseapp.com",
+        projectId: "gloriamobi-5a5bf",
+        storageBucket: "gloriamobi-5a5bf.appspot.com",
+        messagingSenderId: "94268964690",
+        appId: "1:94268964690:web:d7809308d1a73b555a848b",
+        measurementId: "G-Y7M27KHFLD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const CityInput = document.getElementById("casCity");
+    const DepartureTimeInput = document.getElementById("casDepartureTime");
+    const ExitPointInput = document.getElementById("casExitPoint");
+    const RouteUniInput = document.getElementById("casRouteUni");
+    const IMG1Input = document.getElementById("IMG1");
+    const IMG2Input = document.getElementById("IMG2");
+    const IMG3Input = document.getElementById("IMG3");
+    const IMG4Input = document.getElementById("IMG4");
+
+    const addBtn = document.getElementById("InstBtn");
+
+    function resetFields() {
+        CityInput.value = '';
+        DepartureTimeInput.value = '';
+        ExitPointInput.value = '';
+        RouteUniInput.value = '';
+        IMG1Input.value = '';
+        IMG2Input.value = '';
+        IMG3Input.value = '';
+        IMG4Input.value = '';
+    }
+
+    function convertToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    }
+
+        function generateCustomCode(length = 20) {
+    const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let code = "";
+    for (let i = 0; i < length; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return code;
+    }
+    
+    async function AdicionarDados() {
+        try {
+            const img1Base64 = IMG1Input.files[0] ? await convertToBase64(IMG1Input.files[0]) : '';
+            const img2Base64 = IMG2Input.files[0] ? await convertToBase64(IMG2Input.files[0]) : '';
+            const img3Base64 = IMG3Input.files[0] ? await convertToBase64(IMG3Input.files[0]) : '';
+            const img4Base64 = IMG4Input.files[0] ? await convertToBase64(IMG4Input.files[0]) : '';
+            const customCode = generateCustomCode();
+            
+
+            await setDoc(doc(db, "route", customCode), {
+                City: CityInput.value,
+                DepartureTime: DepartureTimeInput.value,
+                ExitPoint: ExitPointInput.value,
+                RouteUni: RouteUniInput.value,
+                IMG1: img1Base64,
+                IMG2: img2Base64,
+                IMG3: img3Base64,
+                IMG4: img4Base64,
+            });
+
+            alert("Dados armazenados com sucesso");
+            resetFields();
+        } catch (error) {
+            alert("Falha ao adicionar dados: " + error);
+        }
+    }
+
+    addBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        AdicionarDados();
+    });
+
+    
+// Verifique se o usuário está autenticado
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        // O usuário está autenticado, você pode acessar suas informações
+        const userName = user.displayName; // Nome do usuário
+        const userEmail = user.email; // Email do usuário
+
+        // Seletor para o elemento onde você quer exibir o nome e email do usuário
+        const userInfoElement = document.querySelector('.cinfo');
+
+        // Atualizando o HTML do elemento com as informações do usuário
+        userInfoElement.innerHTML = `
+           
+            <p class="pinfo">${userEmail}</p>
+        `;
+    } else {
+        // O usuário não está autenticado, faça o que for necessário
+    }
+});
+
+</script>
+</body>
+</html>

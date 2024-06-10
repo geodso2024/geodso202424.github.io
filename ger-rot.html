@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <!-- Include jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Include jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="grid-container">
+        <div class="grid-item1">
+            <img class="logoh" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="Logo">
+            <div class="user-photo-container">
+                <img src="https://img.freepik.com/psd-gratuitas/ilustracao-3d-de-avatar-ou-perfil-humano_23-2150671142.jpg?size=338&ext=jpg" alt="User photo" class="user-photo">
+                
+            </div>
+            <div class="cinfo">
+                
+                <p class="pinfo">Email do Usuário</p>
+            </div>
+            <nav class="menu">    
+                <ul class="menu">    
+                    <li class="btnmenu"><a class="a2" href="ger-user.html">USUÁRIOS</a></li>
+                    <li class="btnmenu"><a class="a2" href="ger-rot.html">ROTAS</a></li>              
+                    <li class="btnmenu"><a class="a2" href="index.html">SAIR</a></li>
+                </ul>   
+            </nav>            
+        </div>
+        
+
+        <div class="grid-item2">
+            <h1 class="arger">Área de Gerenciamento de Rota</h1>
+            <div class="boxtab">
+                <div class="cabetab">
+                    <p class="pcabe">
+                        
+                        <button id="gePdf" onclick="generatePDF()">Gerar PDF</button>
+                       
+                    </p>
+                    
+                </div>
+                <div class="scrollable-table-container">
+                    <table id="tab12" class="table table-dark">
+                        <thead>
+                            <tr>                                
+                                <th>CIDADE</th>
+                                <th>HORÁRIO</th>
+                                <th>SAIDA</th>
+                                <th>DESTINO</th>    
+                                <th>Ações</th>
+                                              
+                            </tr>
+                        </thead>
+                        <tbody id="tbody1"></tbody>
+                    </table>
+                </div>
+                <button class="btnfun"><i class="fa-solid fa-plus"></i> <a class="a2" href="cadastrarota.html">Adicionar</a></button>
+            </div>
+            <!-- Popup para edição -->
+            <div id="editPopup" class="popup">
+                <div class="popup-content">
+                    <img class="logohpop" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="Logo Popup">
+                    <input type="hidden" id="editKey">
+                    <input type="text" class="editpop" id="editCpf" placeholder="Novo CPF">
+                    <input type="text" class="editpop" id="editEmail" placeholder="Novo Email">
+                    <input type="text" class="editpop" id="editInstituicao" placeholder="Nova Instituição">
+                    <input type="text" class="editpop" id="editNome" placeholder="Novo Nome">
+                    <input type="text" class="editpop" id="editSenha" placeholder="Nova Senha">
+                    <input type="text" class="editpop" id="editCidade" placeholder="Nova Cidade">
+                    <input class="boxcads" name="file" id="casfile" type="file" placeholder="Anexar Arquivo">                   
+                    <button id="saveButton" onclick="saveChanges()">Salvar</button>
+                    <button id="cancelButton" onclick="closeEditPopup()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="error-message" style="color: red; margin-top: 10px; display: none;"></div>
+
+        <script>
+            // Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyChwMJS0p4pwi9fL-edQEkOhiSupHURjL4",
+                authDomain: "gloriamobi-5a5bf.firebaseapp.com",
+                databaseURL: "https://gloriamobi-5a5bf-default-rtdb.firebaseio.com",
+                projectId: "gloriamobi-5a5bf",
+                storageBucket: "gloriamobi-5a5bf.appspot.com",
+                messagingSenderId: "94268964690",
+                appId: "1:94268964690:web:d7809308d1a73b555a848b",
+                measurementId: "G-Y7M27KHFLD"
+            };
+
+            // Initialize Firebase
+            const app = firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            
+
+            function getAllDataOnce() {
+                db.collection("route").get()
+                    .then(querySnapshot => {
+                        const users = [];
+                        querySnapshot.forEach(doc => {
+                            const user = doc.data();
+                            user.key = doc.id;
+                            users.push(user);
+                        });
+                        addAllItemsToTable(users);
+                    })
+                    .catch(error => {
+                        console.error("Erro ao obter os dados: ", error);
+                    });
+            }
+
+            function addAllItemsToTable(users) {
+                const tbody = document.getElementById('tbody1');
+                tbody.innerHTML = ''; // Clear the table first
+                tbody.innerHTML = ''; // Limpa a tabela antes de adicionar os novos dados
+                users.forEach(user => {
+                    addItemToTable(user);
+                });
+            }
+
+            function addItemToTable(user) {
+                const tbody = document.getElementById('tbody1');
+                const row = tbody.insertRow();
+
+                // Criação das células e adição dos dados
+                
+                const cellCity = row.insertCell(0);
+                const cellDepartureTime = row.insertCell(1);
+                const cellExitPoint = row.insertCell(2);
+                const cellRouteUni = row.insertCell(3); 
+                const cellAcoes = row.insertCell(4);               
+                
+                // Adicionando conteúdo às células
+                
+                cellCity.innerText = user.City;
+                cellDepartureTime.innerText = user.DepartureTime;
+                cellExitPoint.innerText = user.ExitPoint;
+                cellRouteUni.innerText = user.RouteUni;
+                cellAcoes.innerHTML = `<button onclick="deleteUser('${user.key}')">Deletar</button>`; // botões de editar e excluir
+
+                
+            }
+            
+
+            function toggleSelectAll() {
+                const checkboxes = document.querySelectorAll('.user-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = !checkbox.checked;
+                });
+            }
+
+            function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Define o cabeçalho da tabela com as colunas desejadas
+    const headers = [['CIDADE', 'HORÁRIO', 'SAIDA', 'DESTINO']];
+    
+    // Obtém os dados da tabela
+    const data = [];
+    document.querySelectorAll('#tab12 tbody tr').forEach(row => {
+        const rowData = [];
+        row.querySelectorAll('td').forEach(cell => {
+            rowData.push(cell.textContent.trim());
+        });
+        data.push(rowData);
+    });
+    
+    // Gera o PDF com o cabeçalho e os dados
+    doc.autoTable({
+        head: headers,
+        body: data,
+    });
+    
+    // Salva o PDF
+    doc.save('route-relatorio.pdf');
+}
+            
+
+            function closeEditPopup() {
+                document.getElementById('editPopup').style.display = 'none';
+            }
+
+            function saveChanges() {
+                const key = document.getElementById('editKey').value;
+                const updatedData = {
+                    City: document.getElementById('editCpf').value,
+                    DepartureTime: document.getElementById('editEmail').value,
+                    ExitPoint: document.getElementById('editInstituicao').value,
+                    RouteUni: document.getElementById('editName').value,
+                    
+                };
+
+                db.collection("route").doc(key).update(updatedData).then(() => {
+                    closeEditPopup();
+                    getAllDataOnce();
+                }).catch(error => {
+                    console.error("Erro ao salvar as mudanças: ", error);
+                });
+            }
+
+            function deleteUser(key) {
+                db.collection("route").doc(key).delete().then(() => {
+                    getAllDataOnce();
+                }).catch(error => {
+                    console.error("Erro ao deletar usuário: ", error);
+                });
+            }
+
+            function registerUser(key) {
+                // Implemente a lógica para registrar o usuário aqui
+                console.log("Registrar usuário com chave: ", key);
+            }
+
+                // Verifique se o usuário está autenticado
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        // O usuário está autenticado, você pode acessar suas informações
+        const userName = user.displayName; // Nome do usuário
+        const userEmail = user.email; // Email do usuário
+
+        // Seletor para o elemento onde você quer exibir o nome e email do usuário
+        const userInfoElement = document.querySelector('.cinfo');
+
+        // Atualizando o HTML do elemento com as informações do usuário
+        userInfoElement.innerHTML = `
+           
+            <p class="pinfo">${userEmail}</p>
+        `;
+    } else {
+        // O usuário não está autenticado, faça o que for necessário
+    }
+});
+            window.onload = function() {
+                getAllDataOnce();
+            };
+        </script>
+    </div>
+</body>
+</html>

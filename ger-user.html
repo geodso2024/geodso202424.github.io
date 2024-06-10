@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- titulo-->
+    <title>Login</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- fontes  do google fonts-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!--chamada da biblioteca do fire base-->
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+    <!--chamada da biblioteca do  gerar o pdf -->
+    <!-- Include jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Include jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+
+</head>
+
+
+
+<body>
+
+    <div class="grid-container">
+
+        <div class="grid-item1">
+            <img class="logoh" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="Logo">
+            <div class="user-photo-container">
+                <img src="https://img.freepik.com/psd-gratuitas/ilustracao-3d-de-avatar-ou-perfil-humano_23-2150671142.jpg?size=338&ext=jpg" alt="User photo" class="user-photo">
+                
+            </div>
+            <div class="cinfo">
+                
+                <p class="pinfo">Email do Usuário</p>
+            </div>
+            <nav class="menu">    
+                <ul class="menu">    
+                    <li class="btnmenu"><a class="a2" href="ger-user.html">USUÁRIOS</a></li>
+                    <li class="btnmenu"><a class="a2" href="ger-rot.html">ROTAS</a></li>              
+                    <li class="btnmenu"><a class="a2" href="index.html">SAIR</a></li>
+                </ul>   
+            </nav>            
+        </div>
+        
+
+
+
+
+        <div class="grid-item2">
+
+            <h1 class="arger">Área de Gerenciamento de Usuários</h1>
+
+            <div class="boxtab">
+
+                <div class="cabetab">
+
+                    <!--cabeçalho p-->
+                    <p class="pcabe">  
+                      
+                       
+                        <button id="gePdf" onclick="generatePDF()">Gerar PDF</button>
+
+                        <input type="text" name="pesquisa_por_nome" id="pesNome" placeholder="Pesquisa por nome">
+                        <button id="btnPesNome"><i class="fas fa-search"></i> Pesquisa</button>
+
+                    </p>
+                    <p class="pcabe">
+
+                        <input type="text" name="pesquisa_por_cpf" id="pesCpf" placeholder="Pesquisa por CPF">
+                        <button id="btnPesCpf"><i class="fas fa-search"></i> Pesquisa</button>
+
+                    </p>
+                </div>
+
+                <div class="scrollable-table-container">
+
+                    <table id="tab12" class="table table-dark">
+                        <thead>
+                            <tr>
+                                
+                                <th>CPF</th>
+                                <th>Email</th>
+                                <th>Rota</th>
+                                <th>Nome</th>                                
+                                <th>confirmação</th>
+                                <th>Documento</th>
+                                <th>Ações</th>
+                            
+                            </tr>
+                        </thead>
+                        <tbody id="tbody1"></tbody>
+                    </table>
+                </div>
+                
+            </div>
+
+            <!-- Popup do botão editar -->
+
+            <div id="editPopup" class="popup">                
+                <div class="popup-content">
+                    <img class="logohpop" src="https://i.im.ge/2024/04/04/WEcTRc.logo-sem-fundo.png" alt="Logo Popup">
+                    <input type="hidden" id="editKey">
+
+                    <input type="text" class="editpop" id="editCpf" placeholder="Novo CPF">
+                    <input type="text" class="editpop" id="editEmail" placeholder="Novo Email">
+                    <input type="text" class="editpop" id="editroute" placeholder="Nova rota">
+                    <input type="text" class="editpop" id="editNome" placeholder="Novo Nome">
+                    <input type="text" class="editpop" id="editconfirmation" placeholder="confirmação">
+                                
+                    <button id="saveButton" onclick="saveChanges()">Salvar</button>
+                    <button id="cancelButton" onclick="closeEditPopup()">Cancelar</button>
+                </div>
+            </div>
+            
+
+        
+        <!-- inicio do js-->
+
+        <script>
+
+            // Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyChwMJS0p4pwi9fL-edQEkOhiSupHURjL4",
+                authDomain: "gloriamobi-5a5bf.firebaseapp.com",
+                databaseURL: "https://gloriamobi-5a5bf-default-rtdb.firebaseio.com",
+                projectId: "gloriamobi-5a5bf",
+                storageBucket: "gloriamobi-5a5bf.appspot.com",
+                messagingSenderId: "94268964690",
+                appId: "1:94268964690:web:d7809308d1a73b555a848b",
+                measurementId: "G-Y7M27KHFLD"
+            };
+
+            // Initialize Firebase
+            const app = firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const storage = firebase.storage();
+
+            // inicio area de pesquisa
+
+           // eventos ao clicar no botões btn 
+            document.getElementById('btnPesNome').addEventListener('click', () => {
+                const pesquisaNome = document.getElementById('pesNome').value.trim();
+                if (pesquisaNome !== '') {
+                    searchByField('name', pesquisaNome);
+                }
+            });
+
+            document.getElementById('btnPesCpf').addEventListener('click', () => {
+                const pesquisaCpf = document.getElementById('pesCpf').value.trim();
+                if (pesquisaCpf !== '') {
+                    searchByField('cpf', pesquisaCpf);
+                }
+            });
+             // eventos do campo de pesquisas
+            document.getElementById('pesNome').addEventListener('input', () => {
+                if (document.getElementById('pesNome').value.trim() === '') {
+                    getAllDataOnce();
+                }
+            });
+
+            document.getElementById('pesCpf').addEventListener('input', () => {
+                if (document.getElementById('pesCpf').value.trim() === '') {
+                    getAllDataOnce();
+                }
+            });
+
+            function searchByField(field, value) {
+    db.collection("users").where(field, "==", value).get()
+        .then(querySnapshot => {
+            const users = [];
+            querySnapshot.forEach(doc => {
+                const user = doc.data();
+                user.key = doc.id;
+                users.push(user);
+            });
+            addAllItemsToTable(users);
+        })
+        .catch(error => {
+            console.error("Erro ao obter os dados: ", error);
+        });
+}
+
+            // fim  da area  pesquisa
+
+
+
+            function getAllDataOnce() {
+                db.collection("users").get()
+                    .then(querySnapshot => {
+                        const users = [];
+                        querySnapshot.forEach(doc => {
+                            const user = doc.data();
+                            user.key = doc.id;
+                            users.push(user);
+                        });
+                        addAllItemsToTable(users);
+                    })
+                    .catch(error => {
+                        console.error("Erro ao obter os dados: ", error);
+                    });
+            }
+
+            function addAllItemsToTable(users) {
+                const tbody = document.getElementById('tbody1');
+                tbody.innerHTML = ''; // Clear the table first
+                tbody.innerHTML = ''; // Limpa a tabela antes de adicionar os novos dados
+                users.forEach(user => {
+                    addItemToTable(user);
+                });
+            }
+            function addItemToTable(user) {
+            const tbody = document.getElementById('tbody1');
+            const row = tbody.insertRow();
+
+            //   Criação do topo   das células e colunas das tabelas de 0 a 7  e a chamada dos id do banco de dados 
+
+            
+            const cellCpf = row.insertCell(0);
+            const cellEmail = row.insertCell(1);
+            const cellroute = row.insertCell(2);
+            const cellName = row.insertCell(3);    
+            const cellconfirmation = row.insertCell(4);
+            const cellDocumento = row.insertCell(5);
+            const cellAcoes = row.insertCell(6);
+ 
+         // Adicionando conteúdo às células 
+
+           
+            cellCpf.innerText = user.cpf;
+            cellEmail.innerText = user.email;
+            cellroute.innerText = user.route;
+            cellName.innerText = user.name;  
+            cellconfirmation.innerText = user.confirmation
+            cellDocumento.innerHTML = `<button onclick="showDocument('${user.key}')">Ver Documento</button>`; // botão para ver documentos             
+            cellAcoes.innerHTML = `<button onclick="editUser('${user.key}')">Editar</button><button onclick="deleteUser('${user.key}')">Deletar</button>`; // botões de editar e excluir
+
+}
+
+
+
+function showDocument(key) {
+    // Referência ao documento no Firestore
+    db.collection("users").doc(key).get().then(doc => {
+        if (doc.exists) {
+            const user = doc.data();
+            const imageUrl = user.documentPhoto;
+
+            console.log("Documento URL:", imageUrl); // virifica se a url da imagem é valida 
+
+            if (imageUrl) {
+                // Exibir a imagem em um modal
+                const modal = document.createElement('div');
+                modal.classList.add('modal');
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <img src="${imageUrl}" alt="Documento"> 
+                    </div>
+                `;// recebe imagem da const imageurl
+
+                document.body.appendChild(modal);
+
+                // Fechar o modal ao clicar no botão de fechar
+                modal.querySelector('.close-button').onclick = () => {
+                    document.body.removeChild(modal);
+                };
+
+                // Fechar o modal ao clicar fora do conteúdo do modal
+                modal.onclick = (event) => {
+                    if (event.target === modal) {
+                        document.body.removeChild(modal);
+                    }
+                };
+            } else {
+                console.error("URL do documento está undefined");
+            }
+        } else {
+            console.error("Documento não encontrado");
+        }
+    }).catch(error => {
+        console.error("Erro ao obter o documento: ", error);
+    });
+}
+
+
+            
+
+           
+
+            async function generatePDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Define the columns and data
+                const headers = [["CPF", "Email", "Rota", "Name",  "Confirmação"]];
+                const data = [];
+
+                document.querySelectorAll('#tbody1 tr').forEach(row => {
+                    const rowData = [];
+                    row.querySelectorAll('td').forEach((cell, index) => {
+                        if (index > 0 && index < 9) { //  ignora a coluna 0 primeira coluna de seleção 
+                            rowData.push(cell.innerText);
+                        }
+                    });
+                    data.push(rowData);
+                });
+
+                doc.autoTable({
+                    head: headers,
+                    body: data
+                });
+
+                doc.save("users.pdf"); // gera o pdf 
+            }
+        
+
+            function editUser(key) {
+            // Abre o popup de edição e preenche os campos com os dados do usuário
+            db.collection("users").doc(key).get().then(doc => {
+             if (doc.exists) {
+            const user = doc.data();
+            document.getElementById('editKey').value = key;
+            document.getElementById('editCpf').value = user.cpf;
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editroute').value = user.route;
+            document.getElementById('editNome').value = user.name;
+            document.getElementById('editconfirmation').value = user.confirmation;            
+            document.getElementById('editPopup').style.display = 'block';
+        } else {
+            console.error("Documento não encontrado");
+        }
+    }).catch(error => {
+        console.error("Erro ao obter o documento: ", error);
+    });
+}
+
+            function closeEditPopup() {
+                document.getElementById('editPopup').style.display = 'none';
+            }
+
+
+    function saveChanges() {
+        const key = document.getElementById('editKey').value;
+        const updatedData = {
+        cpf: document.getElementById('editCpf').value,
+        email: document.getElementById('editEmail').value,
+        route: document.getElementById('editroute').value,
+        name: document.getElementById('editNome').value,
+        confirmation: document.getElementById('editconfirmation').value
+    };
+
+    db.collection("users").doc(key).update(updatedData).then(() => {
+        closeEditPopup();
+        getAllDataOnce();
+    }).catch(error => {
+        console.error("Erro ao salvar as mudanças: ", error);
+    });
+}
+
+            function deleteUser(key) {
+                db.collection("users").doc(key).delete().then(() => {
+                    getAllDataOnce();
+                }).catch(error => {
+                    console.error("Erro ao deletar usuário: ", error);
+                });
+            }
+
+// Verifique se o usuário está autenticado
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        // O usuário está autenticado, você pode acessar suas informações
+        const userName = user.displayName; // Nome do usuário
+        const userEmail = user.email; // Email do usuário
+
+        // Seletor para o elemento onde você quer exibir o nome e email do usuário
+        const userInfoElement = document.querySelector('.cinfo');
+
+        // Atualizando o HTML do elemento com as informações do usuário
+        userInfoElement.innerHTML = `
+           
+            <p class="pinfo">${userEmail}</p>
+        `;
+    } else {
+        // O usuário não está autenticado, faça o que for necessário
+    }
+});
+
+            window.onload = function() {
+                getAllDataOnce();
+            };
+
+           
+            
+
+                    </script>
+    
+    
+                    <script src="js/abrirpopup.js"></script>
+                </div>
+</body>
+</html>
